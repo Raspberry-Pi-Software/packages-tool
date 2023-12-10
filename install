@@ -42,7 +42,7 @@ if [[ -d "/bin" ]]; then
   rpisft first-installation;
   echo "Installed rpisft.";
   echo "Verifying installation...";
-  if [[-d "/bin/rpisft"]]; then
+  if [[ -d "/bin/rpisft" ]]; then
     echo "Installation has been verified.";
   else
     echo "Installation has not been verified. Tool couldn't be installed.";
