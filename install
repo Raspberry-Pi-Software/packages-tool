@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "Welcome to Raspberry Pi Software! Install our repository command to your system?";
+echo "WARNING: YOU MUST BE ON A SUPPORTED RASPBERRY PI MODEL FOR THIS INSTALLATION TO WORK!";
