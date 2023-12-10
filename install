@@ -34,3 +34,29 @@ else
   echo "Error. The install could not continue. Please download Python v3.11 or greater.";
   exit;
 fi;
+
+if [[ -d "/bin" ]]; then
+  echo "Installing rpisft...";
+  cp installer.bin/rpisft /bin/rpisft;
+  echo "RPISFT> Initialising...";
+  rpisft first-installation;
+  echo "Installed rpisft.";
+  echo "Verifying installation...";
+  if [[-d "/bin/rpisft"]]; then
+    echo "Installation has been verified.";
+  else
+    echo "Installation has not been verified. Tool couldn't be installed.";
+    echo "The installer failed: you may need to provide root access or the respectable privilages.";
+    echo "Exiting...";
+    exit;
+  fi;
+else
+  echo "/bin: No such file or directory.";
+  echo "The installer encountered an error and can't continue.";
+  exit;
+fi;
+
+echo "The packages tool by Raspberry Pi Software has successfully been installed.";
+echo "Exiting in 10 seconds.";
+sleep 10;
+exit;
