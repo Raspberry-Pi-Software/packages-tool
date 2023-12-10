@@ -8,5 +8,5 @@ git clone https://github.com/Raspberry-Pi-Software/packages-tool && cd packages-
 ```
 Use this command to remove the packages tool from your Pi:
 ```bash
-
+cd packages-tool && sudo bash uninstall;
 ```
