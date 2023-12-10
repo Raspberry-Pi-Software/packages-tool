@@ -12,5 +12,5 @@ cd packages-tool && sudo bash uninstall;
 ```
 The usage for this packages tool is:
 ```bash
-rpisft [install|uninstall|remove|delete|add|update|upgrade] <package>
+rpisft [install|uninstall|remove|delete|add|update|upgrade|force-upgrade] <package>
 ```
