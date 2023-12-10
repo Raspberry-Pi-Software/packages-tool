@@ -1,3 +1,9 @@
 #!/bin/bash
+required_os1="GNU/Linux";
+required_os1_out=$(uname -o)
+if [[ $required_os1_out != $required_os1 ]]; then
+  echo "You aren't on a supported system. System type must be of GNU/Linux.";
+  exit;
+fi;
 echo "Welcome to Raspberry Pi Software! Install our repository command to your system?";
 echo "WARNING: YOU MUST BE ON A SUPPORTED RASPBERRY PI MODEL FOR THIS INSTALLATION TO WORK!";
