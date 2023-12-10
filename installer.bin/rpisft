@@ -1,0 +1,13 @@
+#!/bin/bash
+# RPISFT was made by the Raspberry Pi Software organization. This program is used to install packages, uninstall packages etc.
+if [[ $1 == "first-installation" ]]; then
+  echo "RPISFT> Making configuration...";
+  sudo touch /etc/rpisftware.conf;
+  sudo echo "packages_dir=/etc/rpisftware.aad" >> /etc/rpisftware.conf
+  sudo mkdir -p /etc/rpisftware.aad;
+  echo "RPISFT> Made configuration.";
+  echo "RPISFT> Adding default packages...";
+  sudo mkdir -p /etc/rpisftware.aad/packages/;
+  sudo touch /etc/rpisftware.aad/packages/default.pack;
+  sudo echo "dtpt=null\nallow-install=true" >> /etc/rpisftware.aad/packages/default.pack
+fi;
