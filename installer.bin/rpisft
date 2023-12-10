@@ -1,5 +1,6 @@
 #!/bin/bash
 # RPISFT was made by the Raspberry Pi Software organization. This program is used to install packages, uninstall packages etc.
+package_list=();
 if [[ $1 == "first-installation" ]]; then
   echo "RPISFT> Making configuration...";
   sudo touch /etc/rpisftware.conf;
@@ -9,5 +10,52 @@ if [[ $1 == "first-installation" ]]; then
   echo "RPISFT> Adding default packages...";
   sudo mkdir -p /etc/rpisftware.aad/packages/;
   sudo touch /etc/rpisftware.aad/packages/default.pack;
-  sudo echo "dtpt=null\nallow-install=true" >> /etc/rpisftware.aad/packages/default.pack
+  sudo echo "dtpt=null\nallow-install=true" >> /etc/rpisftware.aad/packages/default.pack;
+  echo "RPISFT> Finished installing default packages.";
+  echo "RPISFT> Exiting...";
+fi;
+if [[ $1 == "install" && $2 ]]; then
+  echo "Indexing package list...";
+  wget -q https://raw.githubusercontent.com/Raspberry-Pi-Software/package-list/main/package-list.txt;
+  cat package-list.txt | while read line 
+  do
+     package_list+=('$line');
+  done
+  echo "Updated package list.";
+  echo "Finding package '$2'...";
+  package_exists=false;
+  for i in $package_list;
+  do
+      if [[ $i == $2 ]]; then
+        if [[ $package_exists == true ]]; then
+          echo "Uh oh, we found duplicate packages!";
+          echo "There was an error finding $2 as there is 2 packages of the same name.";
+          echo "Submit this as an issue here: https://github.com/Raspberry-Pi-Software/issues/issues";
+          exit;
+        else
+          echo "Package found.";
+          package_exists=true;
+        fi;
+      fi;
+  done
+  if [[ $package_exists == true ]]; then
+    echo "Installing...";
+  else
+    echo "Package wasn't found. No such package or not in index.";
+    exit;
+  fi;
+  git clone --quiet https://github.com/Raspberry-Pi-Software/$2
+  if [[ -d $2 ]]; then
+    echo "Moving package...";
+    sudo mv ./$2 /etc/rpisftware.aad/packages/$2;
+    echo "Moved. Checking for install script...";
+    if [[ -d /etc/rpisftware.aad/packages/$2/ ]]; then 
+
+    else
+      echo "Error. Package not installed correctly...";
+      exit;
+    fi;
+  else
+    echo "Error installing package. Package doesn't exist."
+  fi;
 fi;
