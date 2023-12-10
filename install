@@ -25,5 +25,12 @@ if [[ $supported_devtree_model == false ]]; then
   exit;
 fi;
 
-echo "Welcome to Raspberry Pi Software! Install our repository command to your system?";
-echo "WARNING: YOU MUST BE ON A SUPPORTED RASPBERRY PI MODEL FOR THIS INSTALLATION TO WORK!";
+echo "Welcome to Raspberry Pi Software!";
+echo "Gathering needed packages...";
+python311_out=$(python --version);
+if [[ $python311_out == "Python 3.11"* ]]; then
+  echo "Supported Python Version: $python311_out";
+else
+  echo "Error. The install could not continue. Please download Python v3.11 or greater.";
+  exit;
+fi;
