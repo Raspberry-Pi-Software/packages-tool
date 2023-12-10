@@ -1,9 +1,29 @@
 #!/bin/bash
 required_os1="GNU/Linux";
-required_os1_out=$(uname -o)
+required_os1_out=$(uname -o);
+supported_models=("Raspberry Pi 4 Model B Rev");
+device_tree_model=$(cat /proc/device-tree/model);
+
 if [[ $required_os1_out != $required_os1 ]]; then
   echo "You aren't on a supported system. System type must be of GNU/Linux.";
   exit;
 fi;
+
+supported_devtree_model=false;
+for i in "${supported_models[@]}"; do
+    if [[ $device_tree_model == *$i* ]]; then
+      echo "Supported model of Raspberry Pi.";
+      echo ".. "$device_tree_model;
+      supported_devtree_model=true;
+    fi;
+done
+
+if [[ $supported_devtree_model == false ]]; then
+  echo "You are not on a supported device model. Cannot run the installer. Supported device models are listed below.";
+  echo $supported_models;
+  echo "Your model is '"$device_tree_model"' which is unsupported or not tested.";
+  exit;
+fi;
+
 echo "Welcome to Raspberry Pi Software! Install our repository command to your system?";
 echo "WARNING: YOU MUST BE ON A SUPPORTED RASPBERRY PI MODEL FOR THIS INSTALLATION TO WORK!";
