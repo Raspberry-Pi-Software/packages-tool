@@ -17,10 +17,11 @@ fi;
 if [[ $1 == "install" && $2 ]]; then
   echo "Indexing package list...";
   wget -q https://raw.githubusercontent.com/Raspberry-Pi-Software/package-list/main/package-list.txt;
-  cat package-list.txt | while read line 
+  while IFS="" read -r p || [ -n "$p" ]
   do
-     package_list+=('$line');
-  done
+    # $p is the item of newline
+    package_list+=("$p");
+  done < package-list
   echo "Updated package list.";
   echo "Finding package '$2'...";
   package_exists=false;
