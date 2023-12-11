@@ -38,6 +38,7 @@ fi;
 if [[ -d "/bin" ]]; then
   echo "Installing rpisft...";
   cp installer.bin/rpisft /bin/rpisft;
+  sudo chmod +x /bin/rpisft;
   echo "RPISFT> Initialising...";
   rpisft first-installation;
   echo "Installed rpisft.";
