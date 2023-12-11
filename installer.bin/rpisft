@@ -46,7 +46,7 @@ if [[ $1 == "install" && $2 ]]; then
     echo "Package wasn't found. No such package or not in index.";
     exit;
   fi;
-  git clone --quiet https://github.com/Raspberry-Pi-Software/$2
+  git clone --quiet https://github.com/Raspberry-Pi-Software/$2 &> /dev/null
   if [[ -d $2 ]]; then
     echo "Moving package...";
     sudo mv ./$2 /etc/rpisftware.aad/packages/$2;
