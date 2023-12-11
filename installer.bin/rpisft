@@ -50,7 +50,10 @@ if [[ $1 == "install" && $2 ]]; then
     sudo mv ./$2 /etc/rpisftware.aad/packages/$2;
     echo "Moved. Checking for install script...";
     if [[ -d /etc/rpisftware.aad/packages/$2/ ]]; then 
-
+        if [[ -e /etc/rpisftware.aad/packages/$2/post-install ]]; then
+            sudo bash "/etc/rpisftware.aad/packages/$2/post-install";
+        fi;
+        echo "Installed $2 successfully."
     else
       echo "Error. Package not installed correctly...";
       exit;
