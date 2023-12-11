@@ -21,8 +21,9 @@ if [[ $1 == "install" && $2 ]]; then
   do
     # $p is the item of newline
     package_list+=("$p");
-  done < package-list
+  done < package-list.txt
   echo "Updated package list.";
+  rm package-list.txt;
   echo "Finding package '$2'...";
   package_exists=false;
   for i in $package_list;
