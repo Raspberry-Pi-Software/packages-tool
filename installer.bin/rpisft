@@ -16,7 +16,7 @@ if [[ $1 == "first-installation" ]]; then
 fi;
 if [[ $1 == "install" && $2 ]]; then
   echo "Indexing package list...";
-  wget -q https://raw.githubusercontent.com/Raspberry-Pi-Software/package-list/main/package-list.txt;
+  wget -q https://cdn.githubraw.com/Raspberry-Pi-Software/package-list/main/package-list.txt;
   while IFS="" read -r p || [ -n "$p" ]
   do
     # $p is the item of newline
