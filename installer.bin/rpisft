@@ -26,7 +26,7 @@ if [[ $1 == "install" && $2 ]]; then
   rm package-list.txt;
   echo "Finding package '$2'...";
   package_exists=false;
-  for i in $package_list;
+  for i in "${package_list[@]}";
   do
       if [[ $i == $2 ]]; then
         if [[ $package_exists == true ]]; then
