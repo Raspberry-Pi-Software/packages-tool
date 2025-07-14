@@ -1,0 +1,48 @@
+#!/bin/bash
+# Uninstaller for Raspberry Pi Software Tool (RPISFT)
+
+echo "Uninstalling Raspberry Pi Software Tool...";
+
+# Remove the rpisft binary
+if [[ -e "/bin/rpisft" ]]; then
+  echo "Removing rpisft binary...";
+  sudo rm -f /bin/rpisft;
+  echo "Removed rpisft binary.";
+else
+  echo "rpisft binary not found in /bin/";
+fi;
+
+# Ask user if they want to remove configuration and packages
+read -p "Do you want to remove all configuration and installed packages? (y/N): " remove_config;
+if [[ "$remove_config" == "y" || "$remove_config" == "Y" ]]; then
+  echo "Removing configuration and packages...";
+  if [[ -d "/etc/rpisftware.aad" ]]; then
+    # Run pre-uninstall scripts for all packages
+    for package_dir in /etc/rpisftware.aad/packages/*/; do
+      if [[ -d "$package_dir" ]]; then
+        package_name=$(basename "$package_dir");
+        if [[ "$package_name" != "default.pack" && -e "$package_dir/pre-uninstall" ]]; then
+          echo "Running pre-uninstall script for $package_name...";
+          sudo bash "$package_dir/pre-uninstall";
+        fi;
+      fi;
+    done;
+    
+    sudo rm -rf /etc/rpisftware.aad;
+    echo "Removed packages directory.";
+  fi;
+  
+  if [[ -e "/etc/rpisftware.conf" ]]; then
+    sudo rm -f /etc/rpisftware.conf;
+    echo "Removed configuration file.";
+  fi;
+  
+  echo "All configuration and packages removed.";
+else
+  echo "Configuration and packages preserved.";
+fi;
+
+echo "Raspberry Pi Software Tool has been uninstalled.";
+echo "Exiting in 5 seconds.";
+sleep 5;
+exit;
