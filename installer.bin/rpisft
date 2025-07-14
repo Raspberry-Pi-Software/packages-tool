@@ -16,7 +16,7 @@ if [[ $1 == "first-installation" ]]; then
 fi;
 if [[ $1 == "install" && $2 ]]; then
   echo "Indexing package list...";
-  wget -q https://cdn.githubraw.com/Raspberry-Pi-Software/package-list/main/package-list.txt;
+  wget -q https://raw.githubusercontent.com/Raspberry-Pi-Software/package-list/main/package-list.txt;
   while IFS="" read -r p || [ -n "$p" ]
   do
     # $p is the item of newline
@@ -42,14 +42,27 @@ if [[ $1 == "install" && $2 ]]; then
   done
   if [[ $package_exists == true ]]; then
     echo "Installing...";
+    # Map package names to repository names
+    repo_name="$2";
+    case "$2" in
+      "device-manager")
+        repo_name="Device-Manager"
+        ;;
+      "gpioplayground")
+        repo_name="GPiOPlayground"
+        ;;
+      "amikapiinit")
+        repo_name="AmikaPi"
+        ;;
+    esac;
   else
     echo "Package wasn't found. No such package or not in index.";
     exit;
   fi;
-  git clone --quiet https://github.com/Raspberry-Pi-Software/$2 &> /dev/null
-  if [[ -d $2 ]]; then
+  git clone --quiet https://github.com/Raspberry-Pi-Software/$repo_name &> /dev/null
+  if [[ -d $repo_name ]]; then
     echo "Moving package...";
-    sudo mv ./$2 /etc/rpisftware.aad/packages/$2;
+    sudo mv ./$repo_name /etc/rpisftware.aad/packages/$2;
     echo "Moved. Checking for install script...";
     if [[ -d /etc/rpisftware.aad/packages/$2/ ]]; then 
         if [[ -e /etc/rpisftware.aad/packages/$2/post-install ]]; then
@@ -61,6 +74,160 @@ if [[ $1 == "install" && $2 ]]; then
       exit;
     fi;
   else
-    echo "Error installing package. Package doesn't exist."
+    echo "Error installing package. Repository '$repo_name' doesn't exist or clone failed."
   fi;
+fi;
+
+# Add command (alias for install)
+if [[ $1 == "add" && $2 ]]; then
+  echo "Running add (install) for package '$2'...";
+  exec $0 install "$2";
+fi;
+
+# Uninstall/remove/delete commands
+if [[ ($1 == "uninstall" || $1 == "remove" || $1 == "delete") && $2 ]]; then
+  echo "Uninstalling package '$2'...";
+  if [[ -d "/etc/rpisftware.aad/packages/$2" ]]; then
+    echo "Found package '$2' in installed packages.";
+    echo "Checking for pre-uninstall script...";
+    if [[ -e "/etc/rpisftware.aad/packages/$2/pre-uninstall" ]]; then
+      echo "Running pre-uninstall script...";
+      sudo bash "/etc/rpisftware.aad/packages/$2/pre-uninstall";
+    fi;
+    echo "Removing package files...";
+    sudo rm -rf "/etc/rpisftware.aad/packages/$2";
+    echo "Successfully uninstalled package '$2'.";
+  else
+    echo "Package '$2' is not installed or not found.";
+    exit 1;
+  fi;
+fi;
+
+# Update command (refresh package list)
+if [[ $1 == "update" ]]; then
+  echo "Updating package list...";
+  wget -q https://raw.githubusercontent.com/Raspberry-Pi-Software/package-list/main/package-list.txt -O /tmp/package-list.txt;
+  if [[ -f /tmp/package-list.txt ]]; then
+    echo "Package list updated successfully.";
+    echo "Available packages:";
+    cat /tmp/package-list.txt;
+    rm /tmp/package-list.txt;
+  else
+    echo "Failed to update package list.";
+    exit 1;
+  fi;
+fi;
+
+# Upgrade command (upgrade all installed packages)
+if [[ $1 == "upgrade" ]]; then
+  echo "Upgrading all installed packages...";
+  if [[ -d "/etc/rpisftware.aad/packages" ]]; then
+    # Get list of packages to upgrade
+    packages_to_upgrade=();
+    for package_dir in /etc/rpisftware.aad/packages/*/; do
+      if [[ -d "$package_dir" ]]; then
+        package_name=$(basename "$package_dir");
+        if [[ "$package_name" != "default.pack" ]]; then
+          packages_to_upgrade+=("$package_name");
+        fi;
+      fi;
+    done;
+    
+    # Upgrade each package
+    for package_name in "${packages_to_upgrade[@]}"; do
+      echo "Upgrading package: $package_name";
+      # First uninstall the old version
+      if [[ -e "/etc/rpisftware.aad/packages/$package_name/pre-uninstall" ]]; then
+        sudo bash "/etc/rpisftware.aad/packages/$package_name/pre-uninstall";
+      fi;
+      sudo rm -rf "/etc/rpisftware.aad/packages/$package_name";
+      # Then install the new version
+      bash "$0" install "$package_name";
+    done;
+    echo "All packages upgraded.";
+  else
+    echo "No packages directory found.";
+  fi;
+fi;
+
+# Force-upgrade command (upgrade with force overwrites)
+if [[ $1 == "force-upgrade" ]]; then
+  echo "Force upgrading all installed packages...";
+  if [[ -d "/etc/rpisftware.aad/packages" ]]; then
+    # Get list of packages to force upgrade
+    packages_to_upgrade=();
+    for package_dir in /etc/rpisftware.aad/packages/*/; do
+      if [[ -d "$package_dir" ]]; then
+        package_name=$(basename "$package_dir");
+        if [[ "$package_name" != "default.pack" ]]; then
+          packages_to_upgrade+=("$package_name");
+        fi;
+      fi;
+    done;
+    
+    # Force upgrade each package
+    for package_name in "${packages_to_upgrade[@]}"; do
+      echo "Force upgrading package: $package_name";
+      # Remove without pre-uninstall scripts for force upgrade
+      sudo rm -rf "/etc/rpisftware.aad/packages/$package_name";
+      # Install the new version
+      bash "$0" install "$package_name";
+    done;
+    echo "All packages force upgraded.";
+  else
+    echo "No packages directory found.";
+  fi;
+fi;
+
+# List installed packages
+if [[ $1 == "list" ]]; then
+  echo "Installed packages:";
+  if [[ -d "/etc/rpisftware.aad/packages" ]]; then
+    for package_dir in /etc/rpisftware.aad/packages/*/; do
+      if [[ -d "$package_dir" ]]; then
+        package_name=$(basename "$package_dir");
+        if [[ "$package_name" != "default.pack" ]]; then
+          echo "  - $package_name";
+        fi;
+      fi;
+    done;
+  else
+    echo "No packages directory found.";
+  fi;
+fi;
+
+# Search packages
+if [[ $1 == "search" && $2 ]]; then
+  echo "Searching for packages matching '$2'...";
+  wget -q https://raw.githubusercontent.com/Raspberry-Pi-Software/package-list/main/package-list.txt -O /tmp/package-list.txt;
+  if [[ -f /tmp/package-list.txt ]]; then
+    grep -i "$2" /tmp/package-list.txt || echo "No packages found matching '$2'.";
+    rm /tmp/package-list.txt;
+  else
+    echo "Failed to fetch package list for search.";
+    exit 1;
+  fi;
+fi;
+
+# Show help if no valid command provided
+if [[ -z $1 || ($1 != "first-installation" && $1 != "install" && $1 != "add" && $1 != "uninstall" && $1 != "remove" && $1 != "delete" && $1 != "update" && $1 != "upgrade" && $1 != "force-upgrade" && $1 != "list" && $1 != "search") ]]; then
+  echo "RPISFT - Raspberry Pi Software Tool";
+  echo "Usage: rpisft [command] [package]";
+  echo "";
+  echo "Commands:";
+  echo "  install <package>    Install a package";
+  echo "  add <package>        Alias for install";
+  echo "  uninstall <package>  Uninstall a package";
+  echo "  remove <package>     Alias for uninstall";
+  echo "  delete <package>     Alias for uninstall";
+  echo "  update               Update package list";
+  echo "  upgrade              Upgrade all installed packages";
+  echo "  force-upgrade        Force upgrade all packages";
+  echo "  list                 List installed packages";
+  echo "  search <term>        Search available packages";
+  echo "";
+  echo "Examples:";
+  echo "  rpisft install device-manager";
+  echo "  rpisft update";
+  echo "  rpisft list";
 fi;
